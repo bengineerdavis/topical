@@ -1,0 +1,34 @@
+[project]
+name = "topical"
+version = "0.1.0"
+description = "Manager-aware scaffolder for chezmoi-Ansible topics"
+requires-python = ">=3.11"
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+test = ["pytest>=9", "hypothesis", "typer", "pyyaml"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+# pycodestyle (E/W) plus pydocstyle under the Google convention, matching the
+# dotfiles repo's standard. Missing-docstring rules are not selected.
+select = ["E", "W", "D"]
+ignore = [
+  "E203",
+  "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pycodestyle]
+# PEP 8: when the line limit is raised, comments and docstrings still wrap at 72.
+max-doc-length = 72
