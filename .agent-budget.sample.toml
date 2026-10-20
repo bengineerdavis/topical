@@ -1,0 +1,9 @@
+# Worker budget for this machine — per contributor, per machine, never committed.
+#
+# Copy this file to .agent-budget.toml and edit the value. A session that
+# finds no .agent-budget.toml asks rather than running a writer unbudgeted —
+# the ask is the forcing function, so nobody is surprised with the bill.
+
+# Max concurrent execution sessions on this machine — the tasks' writers.
+# 0 = serial work, higher = more parallel; read-only research is unbudgeted.
+workers = 1
