@@ -1,3 +1,4 @@
-#!/usr/bin/env zsh
-# alias fragment placeholder — deployed EMPTY (chezmoi empty_ prefix); fill in
-# only if this topic needs it, else leave.
+#!/usr/bin/env bash
+# alias fragment placeholder — deployed EMPTY (chezmoi empty_ prefix). The bash
+# shebang is only for the shellcheck hook (zsh is unsupported; this file is
+# sourced by zshrc, so its shebang never runs). Fill in only if needed.
