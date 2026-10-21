@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-TEMPLATE = Path(__file__).resolve().parents[1] / "template"
+TEMPLATE = Path(__file__).resolve().parents[1] / "src" / "topical" / "template"
 
 
 def test_skeleton_emits_zsh_only_under_files_zsh():

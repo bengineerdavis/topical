@@ -13,6 +13,7 @@ import shutil
 import subprocess
 
 import pytest
+import topical.cli
 import yaml
 
 MARKERS = ("<topic>", "{{ app_name }}", "__MANAGER_BLOCKS__", "__PLAYBOOK_VARS__")
@@ -208,22 +209,20 @@ def test_generated_topic_passes_ansible_syntax_check(scaffold):
     assert check.returncode == 0, check.stderr
 
 
-def test_repo_discovery_walks_upward(
-    runner, topical_module, fleet_repo, tmp_path, monkeypatch
-):
+def test_repo_discovery_walks_upward(runner, fleet_repo, tmp_path, monkeypatch):
     monkeypatch.chdir(fleet_repo / "dotfiles")
     result = runner.invoke(
-        topical_module.app,
+        topical.cli.app,
         ["new", "discover", "--os", "Darwin", "--into", str(tmp_path)],
     )
     assert result.exit_code == 0, result.output
     assert (tmp_path / "apps" / "discover" / "topic.yml").exists()
 
 
-def test_default_destination_is_under_dotfiles_apps(runner, topical_module, fleet_repo):
+def test_default_destination_is_under_dotfiles_apps(runner, fleet_repo):
     """With no --into, the topic lands in <repo>/dotfiles/apps/."""
     result = runner.invoke(
-        topical_module.app,
+        topical.cli.app,
         ["new", "defaultdest", "--os", "Darwin", "--repo", str(fleet_repo)],
     )
     assert result.exit_code == 0, result.output
@@ -272,10 +271,8 @@ def test_bad_name_rejected(scaffold):
     assert result.exit_code != 0
 
 
-def test_repo_discovery_fails_closed_outside_a_checkout(
-    runner, topical_module, tmp_path, monkeypatch
-):
+def test_repo_discovery_fails_closed_outside_a_checkout(runner, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    result = runner.invoke(topical_module.app, ["new", "nowhere", "--os", "Darwin"])
+    result = runner.invoke(topical.cli.app, ["new", "nowhere", "--os", "Darwin"])
     assert result.exit_code == 1
     assert "no checkout" in result.output

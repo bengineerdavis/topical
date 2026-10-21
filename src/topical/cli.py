@@ -1,26 +1,18 @@
-#!/usr/bin/env -S uv run --script
-# /// script
-# requires-python = ">=3.11"
-# dependencies = ["typer", "pyyaml"]
-# ///
-"""Scaffold chezmoi-Ansible topics that are correct for their manager.
+"""Manager for topic-structured chezmoi-Ansible dotfiles repos.
 
-Run as a uv single-file script: the shebang invokes `uv run --script`,
-which resolves the dependencies above into a cached ephemeral venv.
-Nothing is installed into a global Python.
+`topical new` scaffolds a topic that is correct for its package
+managers: it reads the target repo's dotfiles/managers.yaml and emits
+only what the topic's managers need — the cask playbook vars for a cask
+topic,
+`become: true` for apt, nothing for a manager the topic does not use.
+The split of work:
 
-`topical new` reads the fleet checkout's dotfiles/managers.yaml and
-emits
-only what the topic's package managers need — the cask playbook vars for
-a cask topic, `become: true` for apt, nothing for a manager the topic
-does not use. The split of work:
-
-  template/ (here)  manager-neutral skeleton, shipped with this tool,
-                    copied verbatim, splice markers replaced
-  managers.yaml     fleet data, read from the target checkout: module,
-                    become, OS coverage, playbook vars, upgraded_by —
-                    and the per-manager traps
-  this script       the block templates and the package/outline mode map
+  src/topical/template/  manager-neutral skeleton, shipped as
+                         package data, copied and marker-spliced
+  managers.yaml          target-repo data, read at scaffold time:
+                         module, become, OS coverage, playbook vars,
+                         upgraded_by — and the per-manager traps
+  this module            the block templates and the mode map
 
 Two emission modes. `package` managers (homebrew_formula, homebrew_cask,
 homebrew_tap, apt) produce a complete live block from the topic name.
@@ -28,10 +20,8 @@ homebrew_tap, apt) produce a complete live block from the topic name.
 commented skeleton, because URLs, keys and checksums are per-topic and
 unknowable to a generator — the outline carries the traps inline.
 
-Born from the dotfiles repo's TASKS.md A9; the canonical topic skeleton
-moved here with the tool (2026-10-20) on its way to the copier topic
-template (same ownership decision). Repo discovery walks upward for the
-fleet checkout's dotfiles/managers.yaml; --repo is the override.
+Born from the dotfiles repo's TASKS.md A9. Repo discovery walks upward
+for the target checkout's dotfiles/managers.yaml; --repo overrides.
 """
 
 from __future__ import annotations
@@ -436,7 +426,9 @@ def new(
     try:
         repo_root = repo.resolve() if repo else find_repo(Path.cwd())
         managers_path = repo_root / "dotfiles" / "managers.yaml"
-        # The skeleton ships with the tool, beside this script.
+        # The skeleton ships inside the package (wheels are always
+        # unpacked on install, so this is a real directory everywhere:
+        # editable checkout, uv tool, pip).
         template_dir = Path(__file__).resolve().parent / "template"
         data = yaml.safe_load(managers_path.read_text(encoding="utf-8"))
         var_defs: dict[str, str] = data.get("playbook_var_defs", {})

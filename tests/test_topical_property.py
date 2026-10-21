@@ -12,6 +12,7 @@ from __future__ import annotations
 import uuid
 
 import pytest
+import topical.cli
 import yaml
 from hypothesis import HealthCheck, assume, given, settings, strategies as st
 
@@ -42,7 +43,7 @@ manager_lists = st.lists(st.sampled_from(MANAGERS), unique=True, max_size=3)
 )
 @given(name=names, managers=manager_lists, data=st.data())
 def test_generated_topic_has_no_markers_and_parses(
-    name, managers, data, runner, topical_module, fleet_repo, tmp_path
+    name, managers, data, runner, fleet_repo, tmp_path
 ):
     # The topic's OS list must overlap every chosen manager's cover,
     # exactly as the CLI validates. apt + homebrew_cask don't overlap
@@ -58,7 +59,7 @@ def test_generated_topic_has_no_markers_and_parses(
     for manager in managers:
         args += ["--manager", manager]
 
-    result = runner.invoke(topical_module.app, args)
+    result = runner.invoke(topical.cli.app, args)
     assert result.exit_code == 0, result.output
 
     dest = into / "apps" / name

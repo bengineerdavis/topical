@@ -1,14 +1,23 @@
 [project]
 name = "topical"
 version = "0.1.0"
-description = "Manager-aware scaffolder for chezmoi-Ansible topics"
+description = "Manager for topic-structured chezmoi-Ansible dotfiles repos"
 requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["typer>=0.12", "pyyaml>=6"]
 
-[tool.uv]
-package = false
+[project.scripts]
+topical = "topical.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.8"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "src"
 
 [dependency-groups]
-test = ["pytest>=9", "hypothesis", "typer", "pyyaml"]
+test = ["pytest>=9", "hypothesis", "build"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

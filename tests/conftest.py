@@ -1,25 +1,21 @@
 """Fixtures for the topical generator suite.
 
-The subject is ./topical at the repo root — no .py extension, so it
-loads
-through SourceFileLoader. The scaffold source (`--repo`) is a SYNTHETIC
+The subject is the `topical` package itself — tests run under `uv run
+--group test pytest`, which syncs the project (editable) plus the test
+group into the environment. The scaffold source (`--repo`) is a
+SYNTHETIC
 fleet checkout: a tmp dir holding a small dotfiles/managers.yaml that
 covers every manager class (package with and without vars, outline,
-Debian-only). The skeleton is not fixtured — it ships with the tool
-and is
-part of what the tests exercise.
+Debian-only). The skeleton is not fixtured — it ships in the package and
+is part of what the tests exercise.
 """
 
 from __future__ import annotations
 
-import importlib.machinery
-import importlib.util
-from pathlib import Path
-
 import pytest
+import topical.cli
 
-REPO = Path(__file__).resolve().parents[1]
-TOPICAL_PATH = REPO / "topical"
+REPO = __import__("pathlib").Path(__file__).resolve().parents[1]
 
 # A minimal fleet catalog covering every emission path: package managers
 # with and without playbook vars, a tap, a Debian-only manager, and both
@@ -92,27 +88,6 @@ managers:
 
 
 @pytest.fixture(scope="session")
-def topical_module():
-    """Import ./topical as a module so tests can drive its Typer app."""
-    if not TOPICAL_PATH.exists():
-        pytest.skip(f"topical source not found at {TOPICAL_PATH}")
-    try:
-        loader = importlib.machinery.SourceFileLoader("topical", str(TOPICAL_PATH))
-        spec = importlib.util.spec_from_loader(
-            "topical", loader, origin=str(TOPICAL_PATH)
-        )
-        mod = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
-        # The script resolves the skeleton as `Path(__file__).parent /
-        # "template"`; module_from_spec does not populate __file__ for a
-        # SourceFileLoader spec, so set it before exec_module reads it.
-        mod.__file__ = str(TOPICAL_PATH)
-        loader.exec_module(mod)
-        return mod
-    except ImportError as exc:
-        pytest.skip(f"topical deps not installed ({exc})")
-
-
-@pytest.fixture(scope="session")
 def fleet_repo(tmp_path_factory):
     """A synthetic fleet checkout: dotfiles/managers.yaml only."""
     fleet = tmp_path_factory.mktemp("fleet")
@@ -123,19 +98,19 @@ def fleet_repo(tmp_path_factory):
 
 
 @pytest.fixture()
-def runner(topical_module):
+def runner():
     from typer.testing import CliRunner
 
     return CliRunner()
 
 
 @pytest.fixture()
-def scaffold(runner, fleet_repo, topical_module, tmp_path):
+def scaffold(runner, fleet_repo, tmp_path):
     """Invoke `topical new` into tmp_path; return (result, into)."""
 
     def _scaffold(*args: str) -> tuple:
         result = runner.invoke(
-            topical_module.app,
+            topical.cli.app,
             ["new", *args, "--repo", str(fleet_repo), "--into", str(tmp_path)],
         )
         return result, tmp_path
