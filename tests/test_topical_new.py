@@ -220,6 +220,17 @@ def test_repo_discovery_walks_upward(
     assert (tmp_path / "apps" / "discover" / "topic.yml").exists()
 
 
+def test_default_destination_is_under_dotfiles_apps(runner, topical_module, fleet_repo):
+    """With no --into, the topic lands in <repo>/dotfiles/apps/."""
+    result = runner.invoke(
+        topical_module.app,
+        ["new", "defaultdest", "--os", "Darwin", "--repo", str(fleet_repo)],
+    )
+    assert result.exit_code == 0, result.output
+    assert (fleet_repo / "dotfiles" / "apps" / "defaultdest" / "topic.yml").exists()
+    assert not (fleet_repo / "apps").exists()
+
+
 # ── Refuse cases ──────────────────────────────────────────────────────
 
 

@@ -406,7 +406,9 @@ def new(
         None, "--repo", help="Fleet checkout to read dotfiles/managers.yaml from."
     ),
     into: Path | None = typer.Option(
-        None, "--into", help="Destination repo root. Default: same as --repo."
+        None,
+        "--into",
+        help="Destination layout root holding apps/. Default: <repo>/dotfiles.",
     ),
 ) -> None:
     """Scaffold a new topic under apps/, correct for its managers."""
@@ -465,7 +467,10 @@ def new(
                 )
 
         # ── Destination ──────────────────────────────────────────────
-        dest_root = into.resolve() if into else repo_root
+        # Default destination is the checkout's dotfiles/, not the
+        # checkout root: topics live at dotfiles/apps/<name>. --into
+        # overrides the whole layout root (tests, scratch reconciles).
+        dest_root = into.resolve() if into else repo_root / "dotfiles"
         dest = dest_root / "apps" / name
         if dest.exists():
             raise ScaffoldError(
